@@ -1,0 +1,1052 @@
+/* ============================================================
+   Sistema de Organização da Casa — Design System
+   Estilo: Material-inspired, modo claro, cards arredondados.
+   Tipografia: Poppins (display) + Inter (corpo/dados).
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+
+  /* Tema escuro baseado na logo (mascote vespa/marimbondo):
+     fundo preto das linhas do desenho, letras em dourado vibrante,
+     vermelho do olho para urgência, teal do ferrão para "resolvido". */
+  --color-primary: #fcc800; /* dourado vibrante — ícones, links, botão principal, foco */
+  --color-primary-dark: #181818; /* preto do mascote — texto sobre elementos dourados sólidos */
+  --color-primary-light: #2a2210; /* dourado bem escuro — fundos suaves, hover, badges */
+  --color-gold-bright: #fcc800; /* mesmo dourado vibrante — preenchimentos sólidos (avatares, botão principal) */
+  --color-accent: #ff4438; /* vermelho do olho, clareado para se destacar no fundo escuro */
+  --color-accent-light: #3a1416;
+
+  --color-bg: #141210;
+  --color-surface: #1d1a15;
+  --color-border: #362f1d;
+
+  --color-text: #fcc800;
+  --color-text-secondary: #d9c27a;
+  --color-text-muted: #8f8367;
+
+  --color-success: #5fd1c9; /* teal do ferrão, clareado — usado para "resolvido / concluído" */
+  --color-success-bg: #163330;
+  --color-warning: #fcc800; /* pendência continua na família do dourado */
+  --color-warning-bg: #2a2210;
+  --color-danger: #ff4438;
+  --color-danger-bg: #3a1416;
+
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+
+  --shadow-card: 0 2px 16px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+  --font-display: "Poppins", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+
+  --transition-fast: 150ms ease;
+  --transition-medium: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text);
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: var(--font-body);
+}
+
+a {
+  color: var(--color-primary);
+}
+
+/* ---------- Layout ---------- */
+
+.app-shell {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 20px 16px 96px;
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mark {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.greeting h1 {
+  font-size: 22px;
+}
+
+.greeting .subtitle {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.top-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+/* ---------- Cards ---------- */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.card-title .icon {
+  color: var(--color-primary);
+}
+
+/* ---------- Botões ---------- */
+
+.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-primary-dark);
+  width: 100%;
+}
+
+.btn-primary:hover {
+  background: #e0b400;
+}
+
+.btn-primary:disabled {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.btn-secondary:hover {
+  background: #362b12;
+}
+
+.btn-icon {
+  background: transparent;
+  color: var(--color-text-secondary);
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.btn-icon:hover {
+  background: var(--color-border);
+}
+
+.btn-danger-ghost {
+  background: transparent;
+  color: var(--color-danger);
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.btn-danger-ghost:hover {
+  background: var(--color-danger-bg);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ---------- Avisos ---------- */
+
+.aviso-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.aviso-item:last-child {
+  border-bottom: none;
+}
+
+.aviso-bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.aviso-texto {
+  flex: 1;
+}
+
+.aviso-titulo {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.aviso-descricao {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* ---------- Situação da semana / anel de progresso ---------- */
+
+.semana-status {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.progress-ring {
+  flex-shrink: 0;
+}
+
+.progress-ring circle.ring-bg {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 10;
+}
+
+.progress-ring circle.ring-fill {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transform-origin: center;
+  transform: rotate(-90deg);
+  transition: stroke-dashoffset var(--transition-medium), stroke var(--transition-medium);
+}
+
+.progress-ring.completa circle.ring-fill {
+  stroke: var(--color-success);
+}
+
+.progress-ring-label {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  fill: var(--color-text);
+}
+
+.semana-detalhes {
+  flex: 1;
+}
+
+.semana-numeros {
+  display: flex;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.semana-numero {
+  display: flex;
+  flex-direction: column;
+}
+
+.semana-numero .valor {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.semana-numero .label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.status-mensagem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  margin-top: 10px;
+}
+
+.status-mensagem.pendente {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.status-mensagem.completa {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+/* ---------- Registrar faxina ---------- */
+
+.registro-bloqueado {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: 8px;
+}
+
+textarea.input-observacao {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  resize: vertical;
+  min-height: 44px;
+  margin-bottom: 10px;
+  background: var(--color-bg);
+}
+
+textarea.input-observacao:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* ---------- Histórico ---------- */
+
+.historico-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.historico-item:last-child {
+  border-bottom: none;
+}
+
+.historico-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.historico-info {
+  flex: 1;
+}
+
+.historico-nome {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.historico-obs {
+  color: var(--color-text-secondary);
+  font-size: 12.5px;
+  margin-top: 1px;
+}
+
+.historico-tempo {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ---------- Estado vazio ---------- */
+
+.estado-vazio {
+  text-align: center;
+  padding: 24px 8px;
+  color: var(--color-text-secondary);
+  font-size: 13.5px;
+}
+
+.estado-vazio .icon {
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+/* ---------- Modal "Quem é você" / Trocar usuário ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn var(--transition-medium);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-box {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 28px 20px 32px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: var(--shadow-modal);
+  animation: slideUp var(--transition-medium);
+}
+
+@media (min-width: 560px) {
+  .modal-overlay {
+    align-items: center;
+  }
+  .modal-box {
+    border-radius: var(--radius-lg);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-box h2 {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.modal-box .subtitle {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.usuario-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.usuario-opcao {
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.usuario-opcao:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.usuario-opcao .avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-gold-bright);
+  color: var(--color-primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.usuario-opcao .nome {
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+/* ---------- Toast ---------- */
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: var(--color-primary-dark);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: var(--shadow-modal);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 90%;
+  animation: toastIn var(--transition-medium);
+}
+
+.toast.sucesso {
+  background: var(--color-primary-dark);
+}
+
+.toast.erro {
+  background: var(--color-danger);
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ---------- Formulários (usuarios.html / avisos.html) ---------- */
+
+.form-grupo {
+  margin-bottom: 14px;
+}
+
+.form-grupo label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--color-text-secondary);
+}
+
+.form-grupo input[type="text"],
+.form-grupo textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: var(--color-bg);
+}
+
+.form-grupo input:focus,
+.form-grupo textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.form-grupo input::placeholder,
+.form-grupo textarea::placeholder,
+textarea.input-observacao::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.lista-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.lista-item:last-child {
+  border-bottom: none;
+}
+
+.lista-item .info {
+  flex: 1;
+  min-width: 0;
+}
+
+.lista-item .info input[type="text"] {
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  font-size: 14.5px;
+  padding: 4px 0;
+  width: 100%;
+}
+
+.lista-item .info input[type="text"]:focus {
+  outline: none;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.lista-item .acoes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.badge.ativo {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.badge.inativo {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.badge.resolvido {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.badge.pendente {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+/* Toggle switch simples */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch .slider {
+  position: absolute;
+  inset: 0;
+  background: var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.switch .slider::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform var(--transition-fast);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.switch input:checked + .slider {
+  background: var(--color-primary);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(16px);
+}
+
+/* ---------- Utilitários ---------- */
+
+.icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.loading-skeleton {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 16px;
+}
+
+.footer-nota {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  margin-top: 24px;
+}
+
+/* ---------- Agendar meu dia (index.html) ---------- */
+
+.agendar-rapido {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.agendar-rapido input[type="date"] {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.agendar-rapido input[type="date"]:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.agendar-rapido .btn {
+  white-space: nowrap;
+}
+
+.link-calendario {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 14px;
+  text-decoration: none;
+}
+
+.agendamento-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.agendamento-item:last-child {
+  border-bottom: none;
+}
+
+/* ---------- Confirmação de agendamento vencido ---------- */
+
+.confirmacao-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.confirmacao-item:last-child {
+  border-bottom: none;
+}
+
+.confirmacao-pergunta {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.confirmacao-acoes {
+  display: flex;
+  gap: 8px;
+}
+
+.confirmacao-motivo {
+  margin-top: 10px;
+}
+
+/* ---------- Histórico: item "não realizada" ---------- */
+
+.historico-avatar-nao-feita {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.historico-nao-feita .historico-nome {
+  color: var(--color-danger);
+}
+
+/* ============================================================
+   Calendário (agenda.html)
+   ============================================================ */
+
+.calendario-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.mes-label {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.calendario-dias-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 6px;
+}
+
+.dia-semana-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.calendario-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendario-celula {
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: var(--color-bg);
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.calendario-celula:hover {
+  border-color: var(--color-primary);
+}
+
+.calendario-celula.fora-do-mes {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.calendario-celula.hoje {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.celula-numero {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.celula-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+}
+
+.chip-agendamento {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 8.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.chip-agendamento.concluido {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.chip-agendamento.nao_realizado {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.chip-mais {
+  font-size: 9px;
+  color: var(--color-text-muted);
+  align-self: center;
+}
+
+/* ---------- Painel do dia (dentro do modal) ---------- */
+
+.painel-dia-data {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 14px;
+  text-transform: capitalize;
+}
+
+.painel-dia-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.painel-dia-item:last-child {
+  border-bottom: none;
+}
+
+.painel-dia-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.painel-dia-nome {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.painel-dia-motivo {
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.painel-dia-acoes {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.painel-dia-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.painel-dia-form select {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.painel-dia-vazio {
+  color: var(--color-text-secondary);
+  font-size: 13.5px;
+  padding: 8px 0 4px;
+}

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda — Casa Organizada</title>
+  <link rel="icon" type="image/png" href="../assets/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="header-brand">
+        <a href="index.html" class="btn btn-icon" title="Voltar" aria-label="Voltar para a página inicial">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <div class="greeting">
+          <h1>Agenda</h1>
+          <span class="subtitle">Veja e marque os dias de faxina</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="calendario-header">
+        <button class="btn btn-icon" id="btn-mes-anterior" aria-label="Mês anterior">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <span class="mes-label" id="mes-label">Carregando...</span>
+        <button class="btn btn-icon" id="btn-mes-proximo" aria-label="Próximo mês">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <div class="calendario-dias-semana">
+        <span class="dia-semana-label">Dom</span>
+        <span class="dia-semana-label">Seg</span>
+        <span class="dia-semana-label">Ter</span>
+        <span class="dia-semana-label">Qua</span>
+        <span class="dia-semana-label">Qui</span>
+        <span class="dia-semana-label">Sex</span>
+        <span class="dia-semana-label">Sáb</span>
+      </div>
+
+      <div class="calendario-grid" id="calendario-grid">
+        <div class="loading-skeleton">Carregando calendário...</div>
+      </div>
+    </section>
+
+    <p class="footer-nota">
+      <span class="chip-agendamento" style="display:inline-flex;position:relative;top:3px;">•</span> Agendado
+      &nbsp;&nbsp;
+      <span class="chip-agendamento concluido" style="display:inline-flex;position:relative;top:3px;">•</span> Concluído
+      &nbsp;&nbsp;
+      <span class="chip-agendamento nao_realizado" style="display:inline-flex;position:relative;top:3px;">•</span> Não realizado
+    </p>
+    <p class="footer-nota">Toque em um dia para ver detalhes ou agendar uma faxina.</p>
+  </div>
+
+  <script type="module">
+    import {
+      buscarAgendamentosEntre,
+      criarAgendamento,
+      excluirAgendamento,
+      confirmarAgendamentoFeito,
+      confirmarAgendamentoNaoFeito,
+      paraDataSql,
+      hojeSql,
+    } from "../js/agenda.js";
+    import { buscarUsuariosAtivos } from "../js/usuarios.js";
+    import { mostrarToast, iniciais, escapar, icone } from "../js/ui.js";
+
+    const NOMES_MES = [
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+    ];
+
+    let mesAtual = new Date();
+    mesAtual.setDate(1);
+    let usuariosCache = null;
+
+    async function obterUsuarios() {
+      if (!usuariosCache) usuariosCache = await buscarUsuariosAtivos();
+      return usuariosCache;
+    }
+
+    function formatarDataExtensa(dataSql) {
+      const [ano, mes, dia] = dataSql.split("-").map(Number);
+      const data = new Date(ano, mes - 1, dia);
+      return data.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+    }
+
+    async function renderizarCalendario() {
+      document.getElementById("mes-label").textContent =
+        `${NOMES_MES[mesAtual.getMonth()]} de ${mesAtual.getFullYear()}`;
+
+      const primeiroDia = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), 1);
+      const ultimoDia = new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 0);
+
+      const inicioGrade = new Date(primeiroDia);
+      inicioGrade.setDate(inicioGrade.getDate() - inicioGrade.getDay());
+
+      const fimGrade = new Date(ultimoDia);
+      fimGrade.setDate(fimGrade.getDate() + (6 - fimGrade.getDay()));
+
+      const agendamentos = await buscarAgendamentosEntre(paraDataSql(inicioGrade), paraDataSql(fimGrade));
+
+      const porDia = {};
+      agendamentos.forEach((a) => {
+        (porDia[a.data] ??= []).push(a);
+      });
+
+      const hoje = hojeSql();
+      const celulas = [];
+
+      for (let d = new Date(inicioGrade); d <= fimGrade; d.setDate(d.getDate() + 1)) {
+        const dataSql = paraDataSql(d);
+        const foraDoMes = d.getMonth() !== mesAtual.getMonth();
+        const itensDoDia = porDia[dataSql] || [];
+
+        const chips = itensDoDia
+          .slice(0, 3)
+          .map((item) => `<div class="chip-agendamento ${item.status}">${iniciais(item.usuarios?.nome)}</div>`)
+          .join("");
+
+        const mais = itensDoDia.length > 3 ? `<span class="chip-mais">+${itensDoDia.length - 3}</span>` : "";
+
+        celulas.push(`
+          <div class="calendario-celula ${foraDoMes ? "fora-do-mes" : ""} ${dataSql === hoje ? "hoje" : ""}" data-data="${dataSql}">
+            <span class="celula-numero">${d.getDate()}</span>
+            <div class="celula-chips">${chips}${mais}</div>
+          </div>
+        `);
+      }
+
+      const grid = document.getElementById("calendario-grid");
+      grid.innerHTML = celulas.join("");
+
+      grid.querySelectorAll(".calendario-celula").forEach((celula) => {
+        celula.addEventListener("click", () => abrirPainelDia(celula.dataset.data));
+      });
+    }
+
+    function renderizarItemPainel(item) {
+      const nome = item.usuarios?.nome ?? "Morador removido";
+      let statusHtml = "";
+      let acoesHtml = "";
+
+      if (item.status === "pendente") {
+        statusHtml = `<div class="painel-dia-motivo">Agendado</div>`;
+        acoesHtml = `
+          <button class="btn btn-icon btn-marcar-feito" data-id="${item.id}" title="Marcar como feita">${icone("check-circle")}</button>
+          <button class="btn btn-icon btn-marcar-nao-feito" data-id="${item.id}" title="Marcar como não feita">${icone("x-circle")}</button>
+          <button class="btn btn-danger-ghost btn-cancelar" data-id="${item.id}" title="Cancelar agendamento">${icone("trash-2")}</button>
+        `;
+      } else if (item.status === "concluido") {
+        statusHtml = `<div class="painel-dia-motivo" style="color: var(--color-success)">Concluído</div>`;
+        acoesHtml = `<button class="btn btn-danger-ghost btn-cancelar" data-id="${item.id}" title="Remover registro">${icone("trash-2")}</button>`;
+      } else {
+        statusHtml = `<div class="painel-dia-motivo" style="color: var(--color-danger)">Não realizado — ${escapar(item.motivo || "sem motivo")}</div>`;
+        acoesHtml = `<button class="btn btn-danger-ghost btn-cancelar" data-id="${item.id}" title="Remover registro">${icone("trash-2")}</button>`;
+      }
+
+      return `
+        <div class="painel-dia-item" data-id="${item.id}">
+          <div class="historico-avatar">${iniciais(nome)}</div>
+          <div class="painel-dia-info">
+            <div class="painel-dia-nome">${escapar(nome)}</div>
+            ${statusHtml}
+          </div>
+          <div class="painel-dia-acoes">${acoesHtml}</div>
+        </div>
+      `;
+    }
+
+    async function abrirPainelDia(dataSql) {
+      const usuarios = await obterUsuarios();
+
+      const overlay = document.createElement("div");
+      overlay.className = "modal-overlay";
+      overlay.innerHTML = `
+        <div class="modal-box">
+          <h2>${formatarDataExtensa(dataSql)}</h2>
+          <div id="painel-dia-lista"><div class="loading-skeleton">Carregando...</div></div>
+          <div class="painel-dia-form">
+            <select id="select-usuario-dia">
+              ${usuarios.map((u) => `<option value="${u.id}">${escapar(u.nome)}</option>`).join("")}
+            </select>
+            <button class="btn btn-primary" id="btn-agendar-dia">${icone("plus")} Agendar</button>
+          </div>
+          <button class="btn btn-secondary btn-block" id="btn-fechar-painel" style="margin-top: 10px;">Fechar</button>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      function fechar() {
+        overlay.remove();
+      }
+
+      overlay.querySelector("#btn-fechar-painel").addEventListener("click", fechar);
+      overlay.addEventListener("click", (ev) => {
+        if (ev.target === overlay) fechar();
+      });
+
+      async function atualizarLista() {
+        const itens = await buscarAgendamentosEntre(dataSql, dataSql);
+        const listaEl = overlay.querySelector("#painel-dia-lista");
+
+        if (itens.length === 0) {
+          listaEl.innerHTML = `<p class="painel-dia-vazio">Nenhuma faxina agendada para este dia.</p>`;
+          return;
+        }
+
+        listaEl.innerHTML = itens.map(renderizarItemPainel).join("");
+
+        listaEl.querySelectorAll(".btn-marcar-feito").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const item = itens.find((i) => i.id === btn.dataset.id);
+            btn.disabled = true;
+            try {
+              await confirmarAgendamentoFeito(item, "");
+              mostrarToast("Faxina confirmada.", "sucesso");
+              await atualizarLista();
+              renderizarCalendario();
+            } catch {
+              mostrarToast("Não foi possível confirmar.", "erro");
+              btn.disabled = false;
+            }
+          });
+        });
+
+        listaEl.querySelectorAll(".btn-marcar-nao-feito").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const itemEl = listaEl.querySelector(`.painel-dia-item[data-id="${btn.dataset.id}"]`);
+            itemEl.querySelector(".painel-dia-acoes").style.display = "none";
+
+            const motivoBox = document.createElement("div");
+            motivoBox.className = "confirmacao-motivo";
+            motivoBox.style.cssText = "display: block; width: 100%; margin-top: 8px;";
+            motivoBox.innerHTML = `
+              <textarea class="input-observacao" placeholder="Qual foi o motivo?" rows="2"></textarea>
+              <button class="btn btn-primary btn-enviar-motivo-dia">Enviar</button>
+            `;
+            itemEl.appendChild(motivoBox);
+
+            motivoBox.querySelector(".btn-enviar-motivo-dia").addEventListener("click", async () => {
+              const motivo = motivoBox.querySelector("textarea").value;
+              try {
+                await confirmarAgendamentoNaoFeito(btn.dataset.id, motivo);
+                mostrarToast("Registrado.", "sucesso");
+                await atualizarLista();
+                renderizarCalendario();
+              } catch {
+                mostrarToast("Não foi possível registrar.", "erro");
+              }
+            });
+          });
+        });
+
+        listaEl.querySelectorAll(".btn-cancelar").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            if (!confirm("Remover este agendamento?")) return;
+            try {
+              await excluirAgendamento(btn.dataset.id);
+              mostrarToast("Agendamento removido.", "sucesso");
+              await atualizarLista();
+              renderizarCalendario();
+            } catch {
+              mostrarToast("Não foi possível remover.", "erro");
+            }
+          });
+        });
+      }
+
+      overlay.querySelector("#btn-agendar-dia").addEventListener("click", async () => {
+        const usuarioId = overlay.querySelector("#select-usuario-dia").value;
+        if (!usuarioId) {
+          mostrarToast("Cadastre um morador primeiro.", "erro");
+          return;
+        }
+        try {
+          await criarAgendamento(usuarioId, dataSql);
+          mostrarToast("Faxina agendada.", "sucesso");
+          await atualizarLista();
+          renderizarCalendario();
+        } catch (err) {
+          if (String(err?.message).includes("duplicate")) {
+            mostrarToast("Esse morador já tem faxina agendada nesse dia.", "erro");
+          } else {
+            mostrarToast("Não foi possível agendar.", "erro");
+          }
+        }
+      });
+
+      atualizarLista();
+    }
+
+    document.getElementById("btn-mes-anterior").addEventListener("click", () => {
+      mesAtual.setMonth(mesAtual.getMonth() - 1);
+      renderizarCalendario();
+    });
+
+    document.getElementById("btn-mes-proximo").addEventListener("click", () => {
+      mesAtual.setMonth(mesAtual.getMonth() + 1);
+      renderizarCalendario();
+    });
+
+    renderizarCalendario();
+  </script>
+</body>
+</html>
