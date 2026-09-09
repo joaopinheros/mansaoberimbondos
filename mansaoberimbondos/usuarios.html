@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Usuários — Casa Organizada</title>
-  <link rel="icon" type="image/png" href="../assets/logo.png" />
+  <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="css/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -63,8 +63,8 @@
   </div>
 
   <script type="module">
-    import { buscarTodosUsuarios, criarUsuario, atualizarUsuario } from "../js/usuarios.js";
-    import { mostrarToast, escapar } from "../js/ui.js";
+    import { buscarTodosUsuarios, criarUsuario, atualizarUsuario } from "./js/usuarios.js";
+    import { mostrarToast, escapar } from "./js/ui.js";
 
     async function renderizarLista() {
       const container = document.getElementById("lista-usuarios");

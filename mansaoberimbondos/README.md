@@ -6,28 +6,26 @@ App simples e sem login para os moradores da casa acompanharem as faxinas e vere
 
 ```
 casa-organizada/
+├── index.html             # tela principal (fica na raiz — abre direto no domínio)
+├── agenda.html            # calendário compartilhado para agendar as faxinas
+├── historico.html         # histórico de faxinas com filtro por morador/período
+├── usuarios.html          # gerenciar moradores
+├── avisos.html            # gerenciar avisos
 ├── assets/
 │   └── logo.png           # logo da casa (mascote), usada no cabeçalho e favicon
 ├── css/
 │   └── style.css          # design system (tema escuro/dourado, tipografia, componentes)
 ├── js/
 │   ├── supabase.js        # inicializa o cliente do Supabase
-│   ├── faxinas.js         # meta semanal, regra dos 3 dias, registrar/histórico
+│   ├── faxinas.js         # meta semanal, regra dos N dias, registrar/editar/excluir/histórico
 │   ├── avisos.js          # criar/editar/excluir/resolver avisos
 │   ├── usuarios.js        # criar/editar/ativar/desativar moradores
 │   ├── agenda.js          # agendar dias de faxina, calendário, confirmar feito/não feito
-│   ├── ui.js              # toast, iniciais de avatar, tempo relativo, ícones (extra — ver nota abaixo)
-│   └── app.js             # controlador da página principal (index.html)
-├── pages/
-│   ├── index.html         # tela principal ("Quem é você?", avisos, agenda, semana, registro, histórico)
-│   ├── agenda.html        # calendário compartilhado para agendar as faxinas
-│   ├── usuarios.html      # gerenciar moradores
-│   └── avisos.html        # gerenciar avisos
+│   ├── ui.js              # toast, iniciais de avatar, tempo relativo, ícones
+│   └── app.js             # controlador da tela principal (index.html)
 └── database/
     └── schema.sql         # script para criar as tabelas no Supabase
 ```
-
-> **Nota:** `js/ui.js` não estava na lista original de arquivos, mas foi criado para não repetir as mesmas funções pequenas (toast, iniciais, tempo relativo, ícones) em três páginas diferentes.
 
 ## Se você já tinha rodado uma versão anterior
 
@@ -57,23 +55,22 @@ const SUPABASE_ANON_KEY = "SUA-CHAVE-ANON-AQUI";
 ```
 
 ### 4. Servir os arquivos com um servidor local
-Como as páginas usam módulos JavaScript (`import`/`export`), abrir o `index.html` direto com duplo-clique (`file://`) **não funciona** — o navegador bloqueia por CORS. Use um servidor local simples, por exemplo:
+Como as páginas usam módulos JavaScript (`import`/`export`), abrir o `index.html` direto com duplo-clique (`file://`) **não funciona** — o navegador bloqueia por CORS. Use um servidor local simples, a partir da raiz do projeto:
 
 ```bash
-npx serve casa-organizada
+npx serve
 ```
 
 ou, com Python:
 
 ```bash
-cd casa-organizada
 python3 -m http.server 8000
 ```
 
-Depois acesse `http://localhost:8000/pages/index.html` (ou a porta que o `serve` indicar).
+Depois acesse `http://localhost:8000/` (a `index.html` fica na raiz).
 
 ### 5. Cadastrar os moradores
-Se não cadastrou por SQL, acesse `pages/usuarios.html` e adicione os 4 moradores por lá.
+Se não cadastrou por SQL, acesse `usuarios.html` e adicione os 4 moradores por lá.
 
 ## Manter o Supabase ativo (keep-alive)
 
@@ -109,29 +106,14 @@ o workflow na aba Actions (ou fazer qualquer commit) para religar o agendamento.
 - Quem registra continua sendo "o responsável" para a **regra dos N dias** e a
   **meta da semana** (isso não mudou). Os participantes são só para o histórico
   mostrar "Fulano fez a faxina com Ciclano".
-- **Histórico** (`pages/historico.html`): lista todas as faxinas com filtro por
+- **Editar / excluir**: no botão de lápis ao lado de cada faxina (no "Histórico
+  recente" da home e na página de histórico) dá pra corrigir cômodos, quem fez e
+  observação, ou excluir a faxina. Se a faxina tinha vindo de um agendamento
+  confirmado, excluí-la volta o agendamento para "pendente".
+- **Histórico** (`historico.html`): lista todas as faxinas com filtro por
   morador e por período (este mês / 30 / 90 dias / tudo), com um resumo de quantas
   cada um fez no período. O card "Histórico recente" da tela inicial tem um link
   para essa página.
-
-## Contas do mês (planilha do Google)
-
-O card **"Contas do mês"** da tela inicial lê uma planilha do Google Sheets e
-mostra descrição + valor + total. O app **só exibe** — quem edita é vocês, na
-planilha. Cada mês vocês criam uma aba nova nela.
-
-Já vem configurado para a planilha da casa:
-
-- **Abas** no formato `Mês - 09/2026`, `Mês - 10/2026`… (função `nomeAbaDoMes()`).
-  Em setembro ele lê a aba de setembro, em outubro a de outubro, e assim vai.
-- **Tabela** na faixa `C1:D200` de cada aba: coluna **C** = nome da conta,
-  coluna **D** = "Valor da Conta". A linha de cabeçalho e a do "TOTAL" são
-  ignoradas (o app calcula o próprio total). Constante `INTERVALO` em `js/contas.js`.
-
-**Se trocar de planilha:** cole o novo `PLANILHA_ID` (trecho entre `/d/` e `/edit`
-na URL) e garanta **Compartilhar → "Qualquer pessoa com o link" → Leitor**.
-Se mudarem o layout da tabela, ajuste `INTERVALO`. Se aparecer erro de rede/CORS,
-use **Arquivo → Compartilhar → Publicar na web** na planilha.
 
 ## Como funciona o agendamento
 

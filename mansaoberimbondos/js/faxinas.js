@@ -207,6 +207,52 @@ export async function registrarFaxina(usuarioId, dados = {}) {
 }
 
 /**
+ * Edita uma faxina já registrada (observação, tarefas e/ou
+ * participantes). Só mexe nos campos informados em `dados`.
+ */
+export async function atualizarFaxina(id, dados = {}) {
+  const campos = {};
+
+  if ("observacao" in dados) {
+    campos.observacao = dados.observacao?.trim() || null;
+  }
+  if ("tarefas" in dados) {
+    const lista = (dados.tarefas ?? []).filter(Boolean);
+    campos.tarefas = lista.length ? lista : null;
+  }
+  if ("participantes" in dados) {
+    const lista = [...new Set(dados.participantes ?? [])].filter(Boolean);
+    campos.participantes = lista.length > 1 ? lista : null;
+  }
+
+  const { error } = await supabaseClient.from("faxinas").update(campos).eq("id", id);
+
+  if (error) {
+    console.error("Erro ao atualizar faxina:", error);
+    throw error;
+  }
+}
+
+/**
+ * Exclui uma faxina. Se ela tiver vindo de um agendamento confirmado,
+ * o agendamento volta para "pendente" (aí a home volta a perguntar se
+ * a faxina foi feita).
+ */
+export async function excluirFaxina(id) {
+  await supabaseClient
+    .from("agendamentos")
+    .update({ status: "pendente", faxina_id: null })
+    .eq("faxina_id", id);
+
+  const { error } = await supabaseClient.from("faxinas").delete().eq("id", id);
+
+  if (error) {
+    console.error("Erro ao excluir faxina:", error);
+    throw error;
+  }
+}
+
+/**
  * Busca as últimas N faxinas para o histórico, já com o nome do
  * morador (join com usuarios).
  */
@@ -227,7 +273,7 @@ export async function buscarHistorico(limite = 10) {
 
 /**
  * Busca as faxinas registradas a partir de uma data (ISO). Usada
- * pela página de histórico dedicada (pages/historico.html), que
+ * pela página de histórico dedicada (historico.html), que
  * filtra por morador e agrupa no próprio navegador — o volume é
  * pequeno (uma casa registra poucas faxinas por mês).
  */

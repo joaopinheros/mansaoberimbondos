@@ -248,10 +248,12 @@ export async function buscarHistoricoUnificado(limite = 10) {
 
   const itensFeitos = feitas.map((f) => ({
     tipo: "feita",
+    id: f.id,
     data: f.data_hora,
     nome: f.usuarios?.nome ?? "Morador removido",
     observacao: f.observacao,
     tarefas: f.tarefas ?? [],
+    participantesIds: f.participantes ?? [],
     participantes: nomesDosParticipantes(f.participantes, mapaUsuarios),
   }));
 

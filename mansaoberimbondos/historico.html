@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Histórico — Casa Organizada</title>
-  <link rel="icon" type="image/png" href="../assets/logo.png" />
+  <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="css/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="pagina-larga">
@@ -53,19 +53,21 @@
   </div>
 
   <script type="module">
-    import { buscarHistoricoCompleto } from "../js/faxinas.js";
-    import { buscarNaoRealizados, nomesDosParticipantes } from "../js/agenda.js";
-    import { buscarUsuariosAtivos, buscarMapaUsuarios } from "../js/usuarios.js";
+    import { buscarHistoricoCompleto } from "./js/faxinas.js";
+    import { buscarNaoRealizados, nomesDosParticipantes } from "./js/agenda.js";
+    import { buscarUsuariosAtivos, buscarMapaUsuarios } from "./js/usuarios.js";
+    import { abrirModalEditarFaxina } from "./js/faxina-modal.js";
     import {
       iniciais,
       dataCurta,
       tempoRelativo,
       escapar,
+      icone,
       chipsTarefas,
       avatarStack,
       textoParticipantes,
       isoDiasAtras,
-    } from "../js/ui.js";
+    } from "./js/ui.js";
 
     const filtroMorador = document.getElementById("filtro-morador");
     const filtroPeriodo = document.getElementById("filtro-periodo");
@@ -97,6 +99,7 @@
           const nomesParticipantes = nomesDosParticipantes(f.participantes, mapaUsuarios);
           return {
             tipo: "feita",
+            id: f.id,
             data: f.data_hora,
             usuarioId: f.usuario_id,
             participantesIds: f.participantes ?? [],
@@ -178,7 +181,7 @@
           const comQuem = textoParticipantes(item.nomesParticipantes, item.nome);
 
           return `
-            <div class="historico-item">
+            <div class="historico-item" data-faxina-id="${item.id}">
               ${avatarHtml}
               <div class="historico-info">
                 <div class="historico-nome">${escapar(item.nome)} fez a faxina${comQuem ? ` <span class="historico-com">${escapar(comQuem)}</span>` : ""}</div>
@@ -186,9 +189,27 @@
                 ${item.observacao ? `<div class="historico-obs">${escapar(item.observacao)}</div>` : ""}
               </div>
               <div class="historico-tempo">${tempoRelativo(item.data)}</div>
+              <button class="btn btn-icon btn-editar-faxina" title="Editar faxina" aria-label="Editar faxina">${icone("edit-2", "icon-sm")}</button>
             </div>`;
         })
         .join("");
+
+      listaEl.querySelectorAll(".btn-editar-faxina").forEach((botao) => {
+        botao.addEventListener("click", () => {
+          const id = botao.closest(".historico-item").dataset.faxinaId;
+          const item = itens.find((i) => i.tipo === "feita" && i.id === id);
+          if (!item) return;
+          abrirModalEditarFaxina(
+            {
+              id: item.id,
+              observacao: item.observacao,
+              tarefas: item.tarefas,
+              participantesIds: item.participantesIds,
+            },
+            carregar
+          );
+        });
+      });
     }
 
     async function iniciar() {

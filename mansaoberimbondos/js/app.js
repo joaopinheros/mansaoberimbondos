@@ -8,18 +8,13 @@
 import { buscarUsuariosAtivos, buscarUsuarioPorId } from "./usuarios.js";
 import { buscarAvisosAtivos } from "./avisos.js";
 import {
-  buscarContasDoMes,
-  planilhaConfigurada,
-  urlDaPlanilha,
-  formatarReais,
-} from "./contas.js";
-import {
   TAREFAS,
   buscarConfiguracoes,
   buscarFaxinasDaSemana,
   podeRegistrarFaxina,
   registrarFaxina,
 } from "./faxinas.js";
+import { abrirModalEditarFaxina } from "./faxina-modal.js";
 import {
   hojeSql,
   paraDataSql,
@@ -138,7 +133,6 @@ function renderizarTudo() {
   renderizarAvisos();
   renderizarConfirmacaoPendente();
   renderizarSituacaoSemana();
-  renderizarContas();
   renderizarRegistroFaxina();
   renderizarMiniCalendario();
   renderizarProximosAgendamentos();
@@ -243,62 +237,6 @@ async function renderizarConfirmacaoPendente() {
       }
     });
   });
-}
-
-async function renderizarContas() {
-  const container = document.getElementById("lista-contas");
-  if (!container) return;
-
-  if (!planilhaConfigurada()) {
-    container.innerHTML = `
-      <div class="estado-vazio">
-        Planilha de contas ainda não configurada.<br />
-        <span style="font-size:12px">Cole o ID da planilha em <code>js/contas.js</code>.</span>
-      </div>`;
-    return;
-  }
-
-  let dados;
-  try {
-    dados = await buscarContasDoMes();
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = `
-      <div class="estado-vazio">
-        ${escapar(err.message || "Não foi possível ler a planilha agora.")}
-        <br /><a href="${urlDaPlanilha()}" target="_blank" rel="noopener">Abrir planilha ↗</a>
-      </div>`;
-    return;
-  }
-
-  if (dados.itens.length === 0) {
-    container.innerHTML = `
-      <div class="estado-vazio">
-        Nenhuma conta lançada na aba <strong>${escapar(dados.aba)}</strong> ainda.
-        <a href="${urlDaPlanilha()}" target="_blank" rel="noopener">Abrir planilha ↗</a>
-      </div>`;
-    return;
-  }
-
-  container.innerHTML = `
-    <div class="contas-mes">${escapar(dados.aba)}</div>
-    <div class="contas-lista">
-      ${dados.itens
-        .map(
-          (c) => `
-        <div class="conta-item">
-          <span class="conta-descricao">${escapar(c.descricao)}</span>
-          <span class="conta-valor">${formatarReais(c.valor)}</span>
-        </div>`
-        )
-        .join("")}
-    </div>
-    <div class="conta-item conta-total">
-      <span class="conta-descricao">Total</span>
-      <span class="conta-valor">${formatarReais(dados.total)}</span>
-    </div>
-    <a href="${urlDaPlanilha()}" target="_blank" rel="noopener" class="link-calendario">Abrir planilha ↗</a>
-  `;
 }
 
 async function renderizarSituacaoSemana() {
@@ -662,7 +600,7 @@ async function renderizarHistorico() {
       const comQuem = textoParticipantes(item.participantes, item.nome);
 
       return `
-        <div class="historico-item">
+        <div class="historico-item" data-faxina-id="${item.id}">
           <div class="historico-avatar">${iniciais(item.nome)}</div>
           <div class="historico-info">
             <div class="historico-nome">${escapar(item.nome)} fez a faxina${comQuem ? ` <span class="historico-com">${escapar(comQuem)}</span>` : ""}</div>
@@ -670,9 +608,27 @@ async function renderizarHistorico() {
             ${item.observacao ? `<div class="historico-obs">${escapar(item.observacao)}</div>` : ""}
           </div>
           <div class="historico-tempo">${tempoRelativo(item.data)}</div>
+          <button class="btn btn-icon btn-editar-faxina" title="Editar faxina" aria-label="Editar faxina">${icone("edit-2", "icon-sm")}</button>
         </div>`;
     })
     .join("");
+
+  container.querySelectorAll(".btn-editar-faxina").forEach((botao) => {
+    botao.addEventListener("click", () => {
+      const id = botao.closest(".historico-item").dataset.faxinaId;
+      const item = historico.find((h) => h.tipo === "feita" && h.id === id);
+      if (!item) return;
+      abrirModalEditarFaxina(
+        {
+          id: item.id,
+          observacao: item.observacao,
+          tarefas: item.tarefas,
+          participantesIds: item.participantesIds,
+        },
+        renderizarTudo
+      );
+    });
+  });
 }
 
 iniciar();
