@@ -129,26 +129,27 @@ a {
   }
 }
 
-/* ---------- Grade do dashboard (tela inicial) ---------- */
-
-.dashboard {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
-}
+/* ---------- Dashboard (tela inicial) ---------- */
 
 .dashboard .card {
-  margin-bottom: 0;
+  margin-bottom: 16px;
 }
 
+/* No desktop vira layout de colunas (estilo "masonry") — os cards
+   preenchem as colunas conforme a altura, sem buraco entre eles. */
 @media (min-width: 900px) {
   .dashboard {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-    align-items: start;
+    column-count: 2;
+    column-gap: 18px;
+  }
+  .dashboard .card {
+    margin-bottom: 18px;
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
   }
   .dashboard .card--full {
-    grid-column: 1 / -1;
+    column-span: all;
+    -webkit-column-span: all;
   }
 }
 
