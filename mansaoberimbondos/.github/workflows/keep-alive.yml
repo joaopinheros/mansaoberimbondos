@@ -22,6 +22,7 @@
 
 name: Keep-alive do Supabase
 
+
 on:
   schedule:
     # A cada 3 dias, 06:17 UTC. A folga (3 < 7) cobre eventuais
