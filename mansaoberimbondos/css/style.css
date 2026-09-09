@@ -1,0 +1,1505 @@
+/* ============================================================
+   Sistema de Organização da Casa — Design System
+   Estilo: Material-inspired, modo claro, cards arredondados.
+   Tipografia: Poppins (display) + Inter (corpo/dados).
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+
+  /* Tema escuro baseado na logo (mascote vespa/marimbondo):
+     fundo preto das linhas do desenho, letras em dourado vibrante,
+     vermelho do olho para urgência, teal do ferrão para "resolvido". */
+  --color-primary: #fcc800; /* dourado vibrante — ícones, links, botão principal, foco */
+  --color-primary-dark: #181818; /* preto do mascote — texto sobre elementos dourados sólidos */
+  --color-primary-light: #2a2210; /* dourado bem escuro — fundos suaves, hover, badges */
+  --color-gold-bright: #fcc800; /* mesmo dourado vibrante — preenchimentos sólidos (avatares, botão principal) */
+  --color-accent: #ff4438; /* vermelho do olho, clareado para se destacar no fundo escuro */
+  --color-accent-light: #3a1416;
+
+  --color-bg: #100e0b;
+  --color-bg-deep: #0b0a08; /* cantos da tela, degradê noturno */
+  --color-surface: #1d1a15;
+  --color-surface-2: #221e18; /* topo do degradê dos cards */
+  --color-surface-3: #17140f; /* base do degradê dos cards */
+  --color-border: #3a3220;
+  --color-border-glow: rgba(252, 200, 0, 0.32); /* filete de luz no topo do card */
+
+  --color-text: #fcc800; /* dourado — títulos, números, links, ícones, foco */
+  --color-ink: #ece3d0; /* off-white quente — texto corrido (mais leve que o dourado) */
+  --color-text-secondary: #cbb87e;
+  --color-text-muted: #8f8367;
+
+  --color-success: #5fd1c9; /* teal do ferrão, clareado — usado para "resolvido / concluído" */
+  --color-success-bg: #163330;
+  --color-warning: #fcc800; /* pendência continua na família do dourado */
+  --color-warning-bg: #2a2210;
+  --color-danger: #ff4438;
+  --color-danger-bg: #3a1416;
+
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+
+  --shadow-card: 0 6px 24px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 14px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(252, 200, 0, 0.16);
+  --shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.6);
+  --glow-gold: 0 6px 22px rgba(252, 200, 0, 0.24);
+
+  --font-display: "Poppins", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+
+  --transition-fast: 150ms ease;
+  --transition-medium: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-bg-deep);
+  /* Brilhos radiais bem sutis pro fundo noturno não ficar chapado. */
+  background-image:
+    radial-gradient(1100px 620px at 12% -12%, rgba(252, 200, 0, 0.08), transparent 60%),
+    radial-gradient(960px 560px at 112% 4%, rgba(95, 209, 201, 0.05), transparent 55%),
+    linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-deep) 100%);
+  background-attachment: fixed;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text);
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: var(--font-body);
+}
+
+a {
+  color: var(--color-primary);
+}
+
+/* ---------- Layout ---------- */
+
+.app-shell {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 20px 16px 96px;
+  min-height: 100vh;
+}
+
+/* Na tela inicial (dashboard) e no histórico o container abre no desktop. */
+@media (min-width: 900px) {
+  .pagina-inicio .app-shell {
+    max-width: 1000px;
+    padding: 28px 24px 96px;
+  }
+  .pagina-larga .app-shell {
+    max-width: 820px;
+    padding: 28px 24px 96px;
+  }
+}
+
+/* ---------- Grade do dashboard (tela inicial) ---------- */
+
+.dashboard {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+.dashboard .card {
+  margin-bottom: 0;
+}
+
+@media (min-width: 900px) {
+  .dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+  }
+  .dashboard .card--full {
+    grid-column: 1 / -1;
+  }
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.logo-mark {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.greeting h1 {
+  font-size: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.greeting .subtitle {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.top-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.top-nav .btn {
+  flex: 0 0 auto;
+  padding: 10px 14px;
+  font-size: 13px;
+  border: 1px solid var(--color-border);
+}
+
+.top-nav .btn .icon {
+  width: 17px;
+  height: 17px;
+}
+
+/* ---------- Cards ---------- */
+
+.card {
+  position: relative;
+  background:
+    linear-gradient(168deg, var(--color-surface-2) 0%, var(--color-surface-3) 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  /* sombra funda + filete de luz branca no topo interno pra "levantar" o box */
+  box-shadow:
+    var(--shadow-card),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 20px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+/* Filete de luz dourada no topo de cada card. */
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-glow), transparent);
+}
+
+@media (hover: hover) and (min-width: 900px) {
+  .pagina-inicio .card:hover,
+  .pagina-larga .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.card-title .icon {
+  color: var(--color-primary);
+}
+
+/* Ícone de cada card num tom diferente, pra tela não ficar
+   monocromática — o dourado continua sendo a identidade. */
+#card-avisos .card-title .icon,
+#card-confirmacao .card-title .icon {
+  color: var(--color-accent);
+}
+#card-registro .card-title .icon {
+  color: var(--color-success);
+}
+#card-historico .card-title .icon {
+  color: var(--color-text-secondary);
+}
+
+/* ---------- Botões ---------- */
+
+.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #ffd42a 0%, #f0b800 100%);
+  color: var(--color-primary-dark);
+  width: 100%;
+  box-shadow: var(--glow-gold);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(180deg, #ffdd52 0%, #f6c210 100%);
+}
+
+.btn-primary:disabled {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.btn-secondary:hover {
+  background: #362b12;
+}
+
+.btn-icon {
+  background: transparent;
+  color: var(--color-text-secondary);
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.btn-icon:hover {
+  background: var(--color-border);
+}
+
+/* Botão "Mudar usuário" no header */
+.btn-mudar-usuario {
+  padding: 9px 14px;
+  font-size: 13px;
+  border: 1px solid var(--color-border);
+}
+
+.icon-sm {
+  width: 15px;
+  height: 15px;
+}
+
+.btn-danger-ghost {
+  background: transparent;
+  color: var(--color-danger);
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.btn-danger-ghost:hover {
+  background: var(--color-danger-bg);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ---------- Avisos ---------- */
+
+.aviso-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.aviso-item:last-child {
+  border-bottom: none;
+}
+
+.aviso-bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.aviso-texto {
+  flex: 1;
+}
+
+.aviso-titulo {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.aviso-descricao {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* ---------- Situação da semana / anel de progresso ---------- */
+
+.semana-status {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.progress-ring {
+  flex-shrink: 0;
+}
+
+.progress-ring circle.ring-bg {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 10;
+}
+
+.progress-ring circle.ring-fill {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transform-origin: center;
+  transform: rotate(-90deg);
+  transition: stroke-dashoffset var(--transition-medium), stroke var(--transition-medium);
+}
+
+.progress-ring.completa circle.ring-fill {
+  stroke: var(--color-success);
+}
+
+.progress-ring-label {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  fill: var(--color-text);
+}
+
+.semana-detalhes {
+  flex: 1;
+}
+
+.semana-numeros {
+  display: flex;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.semana-numero {
+  display: flex;
+  flex-direction: column;
+}
+
+.semana-numero .valor {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.semana-numero .label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.status-mensagem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  margin-top: 10px;
+}
+
+.status-mensagem.pendente {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.status-mensagem.completa {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+/* ---------- Registrar faxina ---------- */
+
+.registro-bloqueado {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* Estado compacto: só o botão que abre o formulário no modal. */
+.registro-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.registro-cta .registro-dica {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.registro-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-box.modal-registro {
+  max-width: 460px;
+}
+
+.modal-registro .registro-form {
+  margin-top: 4px;
+}
+
+.modal-registro .modal-acoes {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.modal-registro .modal-acoes .btn {
+  flex: 1;
+}
+
+.registro-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.registro-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.registro-form textarea.input-observacao {
+  margin-bottom: 0;
+}
+
+/* ---------- Chips selecionáveis (checklist de tarefas / ajudantes) ---------- */
+
+.chips-selecao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip-toggle {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  border-radius: 999px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.chip-toggle:hover {
+  border-color: var(--color-primary);
+}
+
+.chip-toggle:active {
+  transform: scale(0.96);
+}
+
+.chip-toggle.ativo {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+}
+
+.chip-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Chips só de leitura, para mostrar as tarefas de uma faxina no histórico */
+.chips-tarefas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 2px;
+}
+
+.chip-tarefa {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+textarea.input-observacao {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  resize: vertical;
+  min-height: 44px;
+  margin-bottom: 10px;
+  background: var(--color-bg);
+}
+
+textarea.input-observacao:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* ---------- Histórico ---------- */
+
+.historico-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.historico-item:last-child {
+  border-bottom: none;
+}
+
+.historico-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.historico-info {
+  flex: 1;
+}
+
+.historico-nome {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.historico-obs {
+  color: var(--color-text-secondary);
+  font-size: 12.5px;
+  margin-top: 1px;
+}
+
+.historico-com {
+  font-weight: 500;
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+}
+
+/* Avatares sobrepostos (faxina com vários participantes) */
+.avatar-stack {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.avatar-stack .historico-avatar {
+  margin-left: -10px;
+  border: 2px solid var(--color-surface);
+}
+
+.avatar-stack .historico-avatar:first-child {
+  margin-left: 0;
+}
+
+.avatar-stack-mais {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.historico-tempo {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ---------- Contas do mês ---------- */
+
+.contas-mes {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+  margin-bottom: 4px;
+}
+
+.conta-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.conta-item:last-of-type {
+  border-bottom: none;
+}
+
+.conta-valor {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.conta-total {
+  margin-top: 2px;
+  border-bottom: none;
+  border-top: 2px solid var(--color-border);
+  padding-top: 10px;
+}
+
+.conta-total .conta-descricao {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.conta-total .conta-valor {
+  font-size: 17px;
+}
+
+/* ---------- Estado vazio ---------- */
+
+.estado-vazio {
+  text-align: center;
+  padding: 24px 8px;
+  color: var(--color-text-secondary);
+  font-size: 13.5px;
+}
+
+.estado-vazio .icon {
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+/* ---------- Modal "Quem é você" / Trocar usuário ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn var(--transition-medium);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-box {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 28px 20px 32px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: var(--shadow-modal);
+  animation: slideUp var(--transition-medium);
+}
+
+@media (min-width: 560px) {
+  .modal-overlay {
+    align-items: center;
+  }
+  .modal-box {
+    border-radius: var(--radius-lg);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-box h2 {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.modal-box .subtitle {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.usuario-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.usuario-opcao {
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.usuario-opcao:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.usuario-opcao .avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-gold-bright);
+  color: var(--color-primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.usuario-opcao .nome {
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+/* ---------- Toast ---------- */
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: var(--color-primary-dark);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: var(--shadow-modal);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 90%;
+  animation: toastIn var(--transition-medium);
+}
+
+.toast.sucesso {
+  background: var(--color-primary-dark);
+}
+
+.toast.erro {
+  background: var(--color-danger);
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ---------- Formulários (usuarios.html / avisos.html) ---------- */
+
+.form-grupo {
+  margin-bottom: 14px;
+}
+
+.form-grupo label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--color-text-secondary);
+}
+
+.form-grupo input[type="text"],
+.form-grupo textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: var(--color-bg);
+}
+
+.form-grupo input:focus,
+.form-grupo textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.form-grupo input::placeholder,
+.form-grupo textarea::placeholder,
+textarea.input-observacao::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.lista-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.lista-item:last-child {
+  border-bottom: none;
+}
+
+.lista-item .info {
+  flex: 1;
+  min-width: 0;
+}
+
+.lista-item .info input[type="text"] {
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  font-size: 14.5px;
+  padding: 4px 0;
+  width: 100%;
+}
+
+.lista-item .info input[type="text"]:focus {
+  outline: none;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.lista-item .acoes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.badge.ativo {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.badge.inativo {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.badge.resolvido {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.badge.pendente {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+/* Toggle switch simples */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch .slider {
+  position: absolute;
+  inset: 0;
+  background: var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.switch .slider::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform var(--transition-fast);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.switch input:checked + .slider {
+  background: var(--color-primary);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(16px);
+}
+
+/* ---------- Utilitários ---------- */
+
+.icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.loading-skeleton {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 16px;
+}
+
+.footer-nota {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  margin-top: 24px;
+}
+
+/* ---------- Mini-calendário (card de agendamento na home) ---------- */
+
+#mini-calendario {
+  margin-bottom: 14px;
+}
+
+.mini-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.mini-cal-header .mes-label {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.mini-cal-header .btn-icon {
+  padding: 4px;
+}
+
+#mini-calendario .calendario-grid {
+  gap: 3px;
+}
+
+#mini-calendario .calendario-celula {
+  aspect-ratio: 1 / 1;
+  padding: 2px;
+  gap: 2px;
+  position: relative;
+}
+
+#mini-calendario .celula-numero {
+  font-size: 12px;
+}
+
+#mini-calendario .calendario-celula.passado {
+  opacity: 0.28;
+  cursor: default;
+  pointer-events: none;
+}
+
+#mini-calendario .calendario-celula.selecionado {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+#mini-calendario .calendario-celula.selecionado .celula-numero {
+  color: var(--color-primary-dark);
+}
+
+.mini-cal-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+#mini-calendario .calendario-celula.selecionado .mini-cal-dot {
+  background: var(--color-primary-dark);
+}
+
+.agenda-proximas-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 16px 0 4px;
+}
+
+/* ---------- Agendar meu dia (index.html) ---------- */
+
+.agendar-rapido {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.agendar-rapido input[type="date"] {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.agendar-rapido input[type="date"]:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.agendar-rapido .btn {
+  white-space: nowrap;
+}
+
+.link-calendario {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 14px;
+  text-decoration: none;
+}
+
+.agendamento-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.agendamento-item:last-child {
+  border-bottom: none;
+}
+
+/* ---------- Confirmação de agendamento vencido ---------- */
+
+.confirmacao-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.confirmacao-item:last-child {
+  border-bottom: none;
+}
+
+.confirmacao-pergunta {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.confirmacao-acoes {
+  display: flex;
+  gap: 8px;
+}
+
+.confirmacao-motivo {
+  margin-top: 10px;
+}
+
+/* ---------- Histórico: item "não realizada" ---------- */
+
+.historico-avatar-nao-feita {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.historico-nao-feita .historico-nome {
+  color: var(--color-danger);
+}
+
+/* ============================================================
+   Calendário (agenda.html)
+   ============================================================ */
+
+.calendario-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.mes-label {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.calendario-dias-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 6px;
+}
+
+.dia-semana-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.calendario-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendario-celula {
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: var(--color-bg);
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.calendario-celula:hover {
+  border-color: var(--color-primary);
+}
+
+.calendario-celula.fora-do-mes {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.calendario-celula.hoje {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.celula-numero {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.celula-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+}
+
+.chip-agendamento {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 8.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.chip-agendamento.concluido {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.chip-agendamento.nao_realizado {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.chip-mais {
+  font-size: 9px;
+  color: var(--color-text-muted);
+  align-self: center;
+}
+
+/* ---------- Painel do dia (dentro do modal) ---------- */
+
+.painel-dia-data {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 14px;
+  text-transform: capitalize;
+}
+
+.painel-dia-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.painel-dia-item:last-child {
+  border-bottom: none;
+}
+
+.painel-dia-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.painel-dia-nome {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.painel-dia-motivo {
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.painel-dia-acoes {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.painel-dia-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.painel-dia-form select {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.painel-dia-vazio {
+  color: var(--color-text-secondary);
+  font-size: 13.5px;
+  padding: 8px 0 4px;
+}
+
+/* ============================================================
+   Histórico (historico.html)
+   ============================================================ */
+
+.filtro-bar {
+  display: flex;
+  gap: 10px;
+}
+
+.filtro-campo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.filtro-campo select {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.filtro-campo select:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.historico-resumo {
+  margin-top: 16px;
+}
+
+.resumo-numeros {
+  display: flex;
+  gap: 20px;
+}
+
+.resumo-numero {
+  display: flex;
+  flex-direction: column;
+}
+
+.resumo-numero .valor {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.resumo-numero .label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.resumo-por-morador {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.resumo-chip {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-primary-light);
+  color: var(--color-text-secondary);
+}
+
+.resumo-chip strong {
+  color: var(--color-primary);
+}

@@ -1,0 +1,70 @@
+# ============================================================
+# Keep-alive do Supabase
+#
+# O plano free do Supabase pausa o projeto depois de 7 dias sem
+# nenhuma requisição na API. Como a casa usa o app pouco, este
+# workflow faz um "bip" a cada 3 dias: insere 1 linha na tabela
+# `pings` via API REST. Isso conta como requisição (mantém o
+# projeto ativo) e como registro.
+#
+# Configuração (uma vez):
+#   Settings > Secrets and variables > Actions > New repository secret
+#     SUPABASE_URL       -> https://SEU-PROJETO.supabase.co   (igual ao js/supabase.js)
+#     SUPABASE_ANON_KEY  -> a chave anon                       (igual ao js/supabase.js)
+#
+# Para testar agora: aba "Actions" > "Keep-alive do Supabase" > "Run workflow".
+#
+# Atenção: o GitHub desativa workflows agendados depois de 60 dias
+# sem nenhum commit no repositório. Se isso acontecer, o Supabase
+# volta a poder pausar — basta reativar o workflow na aba Actions
+# (ou fazer qualquer commit) para religar o agendamento.
+# ============================================================
+
+name: Keep-alive do Supabase
+
+on:
+  schedule:
+    # A cada 3 dias, 06:17 UTC. A folga (3 < 7) cobre eventuais
+    # atrasos ou execuções puladas pelo GitHub.
+    - cron: "17 6 */3 * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inserir ping
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "Faltam os secrets SUPABASE_URL / SUPABASE_ANON_KEY no repositório." >&2
+            exit 1
+          fi
+          codigo=$(curl -sS -o /tmp/resposta -w "%{http_code}" \
+            -X POST "${SUPABASE_URL}/rest/v1/pings" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d '{"origem":"github-actions"}')
+          echo "HTTP ${codigo}"
+          cat /tmp/resposta || true
+          test "${codigo}" = "201"
+
+      - name: Limpar pings com mais de 30 dias
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          limite=$(date -u -d '30 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          codigo=$(curl -sS -o /dev/null -w "%{http_code}" \
+            -X DELETE "${SUPABASE_URL}/rest/v1/pings?created_at=lt.${limite}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Prefer: return=minimal")
+          echo "HTTP ${codigo} (limpeza — 2xx esperado)"
+          case "${codigo}" in 2*) : ;; *) exit 1 ;; esac

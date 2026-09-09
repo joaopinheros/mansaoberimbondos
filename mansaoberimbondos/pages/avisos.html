@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Avisos — Casa Organizada</title>
+  <link rel="icon" type="image/png" href="../assets/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="header-brand">
+        <a href="index.html" class="btn btn-icon" title="Voltar" aria-label="Voltar para a página inicial">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <div class="greeting">
+          <h1>Avisos</h1>
+          <span class="subtitle">Crie e gerencie os avisos da casa</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Novo aviso
+        </div>
+      </div>
+      <div class="form-grupo">
+        <label for="input-titulo">Título</label>
+        <input type="text" id="input-titulo" placeholder="Ex: Comprar detergente" />
+      </div>
+      <div class="form-grupo">
+        <label for="input-descricao">Descrição (opcional)</label>
+        <textarea id="input-descricao" rows="2" placeholder="Detalhes do aviso"></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" id="btn-criar-aviso">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Criar aviso
+      </button>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          Todos os avisos
+        </div>
+      </div>
+      <div id="lista-avisos"><div class="loading-skeleton">Carregando...</div></div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { buscarTodosAvisos, criarAviso, atualizarAviso, excluirAviso } from "../js/avisos.js";
+    import { mostrarToast, escapar } from "../js/ui.js";
+
+    const ICONE_LIXEIRA = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+
+    async function renderizarLista() {
+      const container = document.getElementById("lista-avisos");
+      const avisos = await buscarTodosAvisos();
+
+      if (avisos.length === 0) {
+        container.innerHTML = `<div class="estado-vazio">Nenhum aviso criado ainda.</div>`;
+        return;
+      }
+
+      container.innerHTML = avisos
+        .map(
+          (a) => `
+            <div class="lista-item" data-id="${a.id}">
+              <div class="info">
+                <input type="text" value="${escapar(a.titulo)}" data-campo="titulo" />
+                <textarea rows="1" data-campo="descricao" placeholder="Sem descrição">${escapar(a.descricao ?? "")}</textarea>
+              </div>
+              <span class="badge ${a.resolvido ? "resolvido" : "pendente"}">${a.resolvido ? "Resolvido" : "Pendente"}</span>
+              <div class="acoes">
+                <label class="switch" title="${a.resolvido ? "Marcar como pendente" : "Marcar como resolvido"}">
+                  <input type="checkbox" data-campo="resolvido" ${a.resolvido ? "checked" : ""} />
+                  <span class="slider"></span>
+                </label>
+                <button class="btn btn-danger-ghost" data-acao="excluir" title="Excluir aviso" aria-label="Excluir aviso">
+                  ${ICONE_LIXEIRA}
+                </button>
+              </div>
+            </div>`
+        )
+        .join("");
+
+      container.querySelectorAll('input[data-campo="titulo"]').forEach((input) => {
+        const original = input.value;
+        input.addEventListener("blur", async () => {
+          const novo = input.value.trim();
+          if (!novo || novo === original) {
+            input.value = original;
+            return;
+          }
+          const id = input.closest(".lista-item").dataset.id;
+          try {
+            await atualizarAviso(id, { titulo: novo });
+            mostrarToast("Aviso atualizado.", "sucesso");
+          } catch {
+            mostrarToast("Não foi possível atualizar o aviso.", "erro");
+            input.value = original;
+          }
+        });
+      });
+
+      container.querySelectorAll('textarea[data-campo="descricao"]').forEach((textarea) => {
+        const original = textarea.value;
+        textarea.addEventListener("blur", async () => {
+          const novo = textarea.value.trim();
+          if (novo === original) return;
+          const id = textarea.closest(".lista-item").dataset.id;
+          try {
+            await atualizarAviso(id, { descricao: novo || null });
+            mostrarToast("Aviso atualizado.", "sucesso");
+          } catch {
+            mostrarToast("Não foi possível atualizar o aviso.", "erro");
+            textarea.value = original;
+          }
+        });
+      });
+
+      container.querySelectorAll('input[data-campo="resolvido"]').forEach((toggle) => {
+        toggle.addEventListener("change", async () => {
+          const id = toggle.closest(".lista-item").dataset.id;
+          try {
+            await atualizarAviso(id, { resolvido: toggle.checked });
+            mostrarToast(toggle.checked ? "Aviso marcado como resolvido." : "Aviso marcado como pendente.", "sucesso");
+            renderizarLista();
+          } catch {
+            mostrarToast("Não foi possível atualizar.", "erro");
+            toggle.checked = !toggle.checked;
+          }
+        });
+      });
+
+      container.querySelectorAll('[data-acao="excluir"]').forEach((botao) => {
+        botao.addEventListener("click", async () => {
+          const item = botao.closest(".lista-item");
+          const titulo = item.querySelector('input[data-campo="titulo"]').value;
+          if (!confirm(`Excluir o aviso "${titulo}"? Essa ação não pode ser desfeita.`)) return;
+
+          const id = item.dataset.id;
+          try {
+            await excluirAviso(id);
+            mostrarToast("Aviso excluído.", "sucesso");
+            renderizarLista();
+          } catch {
+            mostrarToast("Não foi possível excluir o aviso.", "erro");
+          }
+        });
+      });
+    }
+
+    document.getElementById("btn-criar-aviso").addEventListener("click", async () => {
+      const inputTitulo = document.getElementById("input-titulo");
+      const inputDescricao = document.getElementById("input-descricao");
+      const titulo = inputTitulo.value.trim();
+
+      if (!titulo) {
+        mostrarToast("Digite um título antes de criar o aviso.", "erro");
+        return;
+      }
+
+      try {
+        await criarAviso(titulo, inputDescricao.value);
+        inputTitulo.value = "";
+        inputDescricao.value = "";
+        mostrarToast("Aviso criado.", "sucesso");
+        renderizarLista();
+      } catch {
+        mostrarToast("Não foi possível criar o aviso.", "erro");
+      }
+    });
+
+    renderizarLista();
+  </script>
+</body>
+</html>

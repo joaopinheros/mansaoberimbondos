@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Histórico — Casa Organizada</title>
+  <link rel="icon" type="image/png" href="../assets/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="pagina-larga">
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="header-brand">
+        <a href="index.html" class="btn btn-icon" title="Voltar" aria-label="Voltar para a página inicial">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <div class="greeting">
+          <h1>Histórico</h1>
+          <span class="subtitle">Todas as faxinas registradas</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="filtro-bar">
+        <label class="filtro-campo">
+          <span>Morador</span>
+          <select id="filtro-morador"><option value="">Todos</option></select>
+        </label>
+        <label class="filtro-campo">
+          <span>Período</span>
+          <select id="filtro-periodo">
+            <option value="mes">Este mês</option>
+            <option value="30">Últimos 30 dias</option>
+            <option value="90" selected>Últimos 90 dias</option>
+            <option value="tudo">Tudo</option>
+          </select>
+        </label>
+      </div>
+      <div id="resumo" class="historico-resumo"></div>
+    </section>
+
+    <section class="card">
+      <div id="lista"><div class="loading-skeleton">Carregando histórico...</div></div>
+    </section>
+
+    <p class="footer-nota">Sistema de organização da casa</p>
+  </div>
+
+  <script type="module">
+    import { buscarHistoricoCompleto } from "../js/faxinas.js";
+    import { buscarNaoRealizados, nomesDosParticipantes } from "../js/agenda.js";
+    import { buscarUsuariosAtivos, buscarMapaUsuarios } from "../js/usuarios.js";
+    import {
+      iniciais,
+      dataCurta,
+      tempoRelativo,
+      escapar,
+      chipsTarefas,
+      avatarStack,
+      textoParticipantes,
+      isoDiasAtras,
+    } from "../js/ui.js";
+
+    const filtroMorador = document.getElementById("filtro-morador");
+    const filtroPeriodo = document.getElementById("filtro-periodo");
+    const resumoEl = document.getElementById("resumo");
+    const listaEl = document.getElementById("lista");
+
+    let mapaUsuarios = {};
+
+    function inicioIso(periodo) {
+      if (periodo === "tudo") return null;
+      if (periodo === "30") return isoDiasAtras(30);
+      if (periodo === "90") return isoDiasAtras(90);
+      // "mes" — primeiro dia do mês atual
+      const d = new Date();
+      return new Date(d.getFullYear(), d.getMonth(), 1).toISOString();
+    }
+
+    async function carregar() {
+      listaEl.innerHTML = `<div class="loading-skeleton">Carregando histórico...</div>`;
+      const desde = inicioIso(filtroPeriodo.value);
+
+      const [feitas, naoFeitas] = await Promise.all([
+        buscarHistoricoCompleto(desde),
+        buscarNaoRealizados(desde),
+      ]);
+
+      const itens = [
+        ...feitas.map((f) => {
+          const nomesParticipantes = nomesDosParticipantes(f.participantes, mapaUsuarios);
+          return {
+            tipo: "feita",
+            data: f.data_hora,
+            usuarioId: f.usuario_id,
+            participantesIds: f.participantes ?? [],
+            nome: f.usuarios?.nome ?? "Morador removido",
+            nomesParticipantes,
+            tarefas: f.tarefas ?? [],
+            observacao: f.observacao,
+          };
+        }),
+        ...naoFeitas.map((n) => ({
+          tipo: "nao_realizada",
+          data: n.data,
+          usuarioId: n.usuario_id,
+          participantesIds: [],
+          nome: n.usuarios?.nome ?? "Morador removido",
+          motivo: n.motivo,
+        })),
+      ].sort((a, b) => new Date(b.data) - new Date(a.data));
+
+      const morador = filtroMorador.value;
+      const filtrados = morador
+        ? itens.filter(
+            (i) => i.usuarioId === morador || i.participantesIds.includes(morador)
+          )
+        : itens;
+
+      renderResumo(filtrados);
+      renderLista(filtrados);
+    }
+
+    function renderResumo(itens) {
+      const feitas = itens.filter((i) => i.tipo === "feita");
+      const naoFeitas = itens.filter((i) => i.tipo === "nao_realizada");
+
+      const contagem = {};
+      feitas.forEach((f) => {
+        const nomes = f.nomesParticipantes.length ? f.nomesParticipantes : [f.nome];
+        nomes.forEach((n) => (contagem[n] = (contagem[n] || 0) + 1));
+      });
+
+      const porMorador = Object.entries(contagem)
+        .sort((a, b) => b[1] - a[1])
+        .map(([nome, n]) => `<span class="resumo-chip">${escapar(nome)}: <strong>${n}</strong></span>`)
+        .join("");
+
+      resumoEl.innerHTML = `
+        <div class="resumo-numeros">
+          <div class="resumo-numero"><span class="valor">${feitas.length}</span><span class="label">faxinas</span></div>
+          ${naoFeitas.length ? `<div class="resumo-numero"><span class="valor">${naoFeitas.length}</span><span class="label">não feitas</span></div>` : ""}
+        </div>
+        ${porMorador ? `<div class="resumo-por-morador">${porMorador}</div>` : ""}
+      `;
+    }
+
+    function renderLista(itens) {
+      if (itens.length === 0) {
+        listaEl.innerHTML = `<div class="estado-vazio">Nada registrado neste período.</div>`;
+        return;
+      }
+
+      listaEl.innerHTML = itens
+        .map((item) => {
+          if (item.tipo === "nao_realizada") {
+            return `
+              <div class="historico-item historico-nao-feita">
+                <div class="historico-avatar historico-avatar-nao-feita">${iniciais(item.nome)}</div>
+                <div class="historico-info">
+                  <div class="historico-nome">${escapar(item.nome)} não fez a faxina</div>
+                  <div class="historico-obs">Motivo: ${escapar(item.motivo || "não informado")}</div>
+                </div>
+                <div class="historico-tempo">${dataCurta(item.data)}</div>
+              </div>`;
+          }
+
+          const varios = item.nomesParticipantes.length > 1;
+          const avatarHtml = varios
+            ? avatarStack(item.nomesParticipantes)
+            : `<div class="historico-avatar">${iniciais(item.nome)}</div>`;
+          const comQuem = textoParticipantes(item.nomesParticipantes, item.nome);
+
+          return `
+            <div class="historico-item">
+              ${avatarHtml}
+              <div class="historico-info">
+                <div class="historico-nome">${escapar(item.nome)} fez a faxina${comQuem ? ` <span class="historico-com">${escapar(comQuem)}</span>` : ""}</div>
+                ${chipsTarefas(item.tarefas)}
+                ${item.observacao ? `<div class="historico-obs">${escapar(item.observacao)}</div>` : ""}
+              </div>
+              <div class="historico-tempo">${tempoRelativo(item.data)}</div>
+            </div>`;
+        })
+        .join("");
+    }
+
+    async function iniciar() {
+      const [usuarios, mapa] = await Promise.all([buscarUsuariosAtivos(), buscarMapaUsuarios()]);
+      mapaUsuarios = mapa;
+
+      usuarios.forEach((u) => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.nome;
+        filtroMorador.appendChild(opt);
+      });
+
+      filtroMorador.addEventListener("change", carregar);
+      filtroPeriodo.addEventListener("change", carregar);
+      carregar();
+    }
+
+    iniciar();
+  </script>
+</body>
+</html>

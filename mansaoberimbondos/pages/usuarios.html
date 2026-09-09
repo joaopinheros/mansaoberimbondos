@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usuários — Casa Organizada</title>
+  <link rel="icon" type="image/png" href="../assets/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="header-brand">
+        <a href="index.html" class="btn btn-icon" title="Voltar" aria-label="Voltar para a página inicial">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <div class="greeting">
+          <h1>Usuários</h1>
+          <span class="subtitle">Cadastre e gerencie os moradores</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Novo morador
+        </div>
+      </div>
+      <div class="form-grupo">
+        <label for="input-novo-nome">Nome</label>
+        <input type="text" id="input-novo-nome" placeholder="Ex: Ana" />
+      </div>
+      <button class="btn btn-primary btn-block" id="btn-adicionar-usuario">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Adicionar morador
+      </button>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          Moradores cadastrados
+        </div>
+      </div>
+      <div id="lista-usuarios"><div class="loading-skeleton">Carregando...</div></div>
+    </section>
+
+    <p class="footer-nota">Desative em vez de excluir — assim o histórico de faxinas continua correto.</p>
+  </div>
+
+  <script type="module">
+    import { buscarTodosUsuarios, criarUsuario, atualizarUsuario } from "../js/usuarios.js";
+    import { mostrarToast, escapar } from "../js/ui.js";
+
+    async function renderizarLista() {
+      const container = document.getElementById("lista-usuarios");
+      const usuarios = await buscarTodosUsuarios();
+
+      if (usuarios.length === 0) {
+        container.innerHTML = `<div class="estado-vazio">Nenhum morador cadastrado ainda. Adicione o primeiro acima.</div>`;
+        return;
+      }
+
+      container.innerHTML = usuarios
+        .map(
+          (u) => `
+            <div class="lista-item" data-id="${u.id}">
+              <div class="info">
+                <input type="text" value="${escapar(u.nome)}" data-campo="nome" />
+              </div>
+              <span class="badge ${u.ativo ? "ativo" : "inativo"}">${u.ativo ? "Ativo" : "Inativo"}</span>
+              <div class="acoes">
+                <label class="switch" title="${u.ativo ? "Desativar" : "Ativar"}">
+                  <input type="checkbox" data-campo="ativo" ${u.ativo ? "checked" : ""} />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>`
+        )
+        .join("");
+
+      // Renomear: salva quando o campo perde o foco e o valor mudou.
+      container.querySelectorAll('input[data-campo="nome"]').forEach((input) => {
+        const valorOriginal = input.value;
+        input.addEventListener("blur", async () => {
+          const novoValor = input.value.trim();
+          if (!novoValor || novoValor === valorOriginal) {
+            input.value = valorOriginal;
+            return;
+          }
+          const id = input.closest(".lista-item").dataset.id;
+          try {
+            await atualizarUsuario(id, { nome: novoValor });
+            mostrarToast("Nome atualizado.", "sucesso");
+          } catch {
+            mostrarToast("Não foi possível atualizar o nome.", "erro");
+            input.value = valorOriginal;
+          }
+        });
+      });
+
+      // Ativar / desativar.
+      container.querySelectorAll('input[data-campo="ativo"]').forEach((toggle) => {
+        toggle.addEventListener("change", async () => {
+          const id = toggle.closest(".lista-item").dataset.id;
+          try {
+            await atualizarUsuario(id, { ativo: toggle.checked });
+            mostrarToast(toggle.checked ? "Morador ativado." : "Morador desativado.", "sucesso");
+            renderizarLista();
+          } catch {
+            mostrarToast("Não foi possível atualizar.", "erro");
+            toggle.checked = !toggle.checked;
+          }
+        });
+      });
+    }
+
+    document.getElementById("btn-adicionar-usuario").addEventListener("click", async () => {
+      const input = document.getElementById("input-novo-nome");
+      const nome = input.value.trim();
+      if (!nome) {
+        mostrarToast("Digite um nome antes de adicionar.", "erro");
+        return;
+      }
+      try {
+        await criarUsuario(nome);
+        input.value = "";
+        mostrarToast("Morador adicionado.", "sucesso");
+        renderizarLista();
+      } catch {
+        mostrarToast("Não foi possível adicionar o morador.", "erro");
+      }
+    });
+
+    renderizarLista();
+  </script>
+</body>
+</html>
